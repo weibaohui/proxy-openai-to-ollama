@@ -1,6 +1,7 @@
 .idea/*
 .vscode/*
 tmp/*
+proxy-openapi-to-ollama
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json

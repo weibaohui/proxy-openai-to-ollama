@@ -11,14 +11,20 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-var openaiClient *openai.Client
+var (
+	openaiClient *openai.Client
+	defaultModel string
+)
 
 func init() {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	baseURL := os.Getenv("OPENAI_BASE_URL")
+	defaultModel = os.Getenv("OPENAI_MODEL_NAME")
+
 	cfg := openai.DefaultConfig(apiKey)
 	if baseURL != "" {
 		cfg.BaseURL = baseURL
+
 	}
 	openaiClient = openai.NewClientWithConfig(cfg)
 }
@@ -30,6 +36,10 @@ func HandleChatCompletions(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
 		return
 	}
+
+	// 检查并设置模型
+	req.Model = defaultModel
+
 	if req.Stream {
 		stream, err := openaiClient.CreateChatCompletionStream(context.Background(), req)
 		if err != nil {
@@ -64,30 +74,16 @@ func HandleChatCompletions(c *gin.Context) {
 
 // 列出模型列表
 func HandleListModels(c *gin.Context) {
-	modelName := os.Getenv("OPENAI_MODEL_NAME")
-	if modelName == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Missing OPENAI_MODEL_NAME env var"})
-		return
-	}
 	resp := gin.H{
 		"object": "list",
 		"data": []gin.H{
 			{
-				"id":     modelName,
-				"object": "model",
+				"id":       defaultModel, // 使用默认模型ID
+				"object":   "model",
+				"owned_by": "user",
+				"created":  1686935002,
 			},
 		},
-	}
-	c.JSON(http.StatusOK, resp)
-}
-
-// 获取模型详情
-func HandleRetrieveModel(c *gin.Context) {
-	modelID := c.Param("model")
-	resp, err := openaiClient.GetModel(context.Background(), modelID)
-	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
-		return
 	}
 	c.JSON(http.StatusOK, resp)
 }
