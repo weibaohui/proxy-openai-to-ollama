@@ -80,5 +80,3 @@ curl http://localhost:8080/api/show/qwen3:0.6b
 3. 支持流式和非流式响应
 4. 默认使用环境变量中配置的模型名称
 
-## 许可证
-本项目采用 Apache License 2.0 许可。
